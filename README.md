@@ -337,45 +337,125 @@ Aplikasi menggunakan React Router dengan path `/simulasi`, `/forcing`, `/riwayat
 
 Service worker dan manifest aktif pada production build. Untuk menjalankan service worker dengan aman, gunakan HTTPS atau `localhost`.
 
-## Upload ke GitHub
+## Git dan GitHub
 
-Project sudah disiapkan untuk repository Git, tetapi belum memiliki remote karena URL repository belum ditentukan.
+Repository resmi project ini:
 
-### Inisialisasi lokal
+**https://github.com/YanNotTamm/Bercabang**
+
+Remote Git sudah dikonfigurasi sebagai `origin` dan branch aktif adalah `main`.
+
+### Clone di komputer baru
+
+```bash
+git clone https://github.com/YanNotTamm/Bercabang.git
+cd Bercabang
+npm ci
+npm run dev
+```
+
+### Workflow harian
+
+Gunakan alur berikut setiap kali ingin mengambil atau mengirim perubahan:
+
+```bash
+# Periksa perubahan lokal
+git status
+
+# Ambil perubahan terbaru dari repository
+git pull --rebase origin main
+
+# Tambahkan file yang memang diubah
+git add .
+
+# Simpan perubahan
+git commit -m "feat: deskripsi perubahan"
+
+# Kirim ke GitHub
+git push origin main
+```
+
+`node_modules/`, `dist/`, file `.env`, dan log lokal otomatis diabaikan oleh `.gitignore`. Jangan pernah commit credential, token, atau file berisi data pribadi.
+
+### Inisialisasi repository dari project yang sudah ada
 
 ```bash
 git init
 git branch -M main
+git remote add origin https://github.com/YanNotTamm/Bercabang.git
 git add .
 git commit -m "feat: initialize Bercabang PWA"
-```
-
-### Tambahkan remote
-
-Ganti `<repository-url>` dengan URL repository GitHub yang dibuat atau sudah dimiliki:
-
-```bash
-git remote add origin <repository-url>
 git push -u origin main
 ```
 
-### Jika repository GitHub sudah dibuat melalui browser
+Jika remote `origin` sudah ada tetapi URL-nya salah, gunakan:
 
-1. Buat repository kosong.
-2. Jangan pilih README, `.gitignore`, atau license saat membuat repository.
-3. Jalankan perintah `git remote add origin` di atas.
-4. Jalankan `git push -u origin main`.
+```bash
+git remote set-url origin https://github.com/YanNotTamm/Bercabang.git
+```
 
-### Jika ingin membuat repository melalui GitHub CLI
+### Konfigurasi author Git
 
-GitHub CLI belum harus di-install untuk workflow manual. Jika ingin memakai `gh`, install GitHub CLI terlebih dahulu, lalu jalankan:
+Jika Git meminta nama dan email saat commit, konfigurasi author lokal repository:
+
+```bash
+git config user.name "Nama Anda"
+git config user.email "email-github-Anda@example.com"
+```
+
+Untuk mengecek konfigurasi tanpa mengubah file project:
+
+```bash
+git config --get user.name
+git config --get user.email
+```
+
+### Melihat status dan riwayat
+
+```bash
+git status
+git log --oneline --decorate -10
+git branch -vv
+git remote -v
+```
+
+### Membatalkan perubahan lokal
+
+```bash
+# Melihat perubahan yang belum di-stage
+git diff
+
+# Membatalkan perubahan pada satu file
+git restore nama-file.tsx
+
+# Membatalkan semua perubahan tracked yang belum di-commit
+git restore .
+```
+
+Perintah `git restore .` tidak menghapus file baru yang belum di-stage. Hati-hati saat digunakan.
+
+### Membatalkan commit terakhir
+
+```bash
+# Melihat commit
+git log -1 --oneline
+
+# Membatalkan commit, tetapi mempertahankan perubahan di working tree
+git reset HEAD~1
+```
+
+Untuk perintah yang mengubah riwayat remote, gunakan `git push --force-with-lease` hanya jika benar-benar diperlukan dan sudah berkomunikasi dengan kontributor lain. Jangan gunakan `--force` secara default.
+
+### GitHub CLI opsional
+
+GitHub CLI (`gh`) belum menjadi dependency project. Workflow manual di atas tetap menjadi cara utama. Jika `gh` sudah di-install, autentikasi dapat dilakukan dengan:
 
 ```bash
 gh auth login
-gh repo create bercabang --private --source=. --remote=origin --push
+gh repo view YanNotTamm/Bercabang
 ```
 
-Jangan memasukkan token, password, API key, atau credential ke dalam source code.
+Jangan menyimpan token GitHub di source code atau `.env` yang ikut ter-commit.
 
 ## Roadmap
 
