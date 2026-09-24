@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", serif;
+  --font-body: "Plus Jakarta Sans", system-ui, sans-serif;
+  --color-ink: #172b3a;
+  --color-muted: #617383;
+  --color-paper: #f7faf9;
+  --color-aqua: #087f8c;
+  --color-aqua-soft: #dff4f1;
+  --color-coral: #ef8354;
+  --color-sun: #f5c451;
+}
+
+:root {
+  color: var(--color-ink);
+  background: var(--color-paper);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--color-paper);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100dvh;
+  background: var(--color-paper);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(8, 127, 140, 0.3);
+  outline-offset: 3px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+::selection {
+  background: #bde7e0;
+  color: var(--color-ink);
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c5d4d2;
+  border-radius: 999px;
+}
+
+.font-numeric {
+  font-variant-numeric: tabular-nums;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-pretty {
+  text-wrap: pretty;
+}
+
+.paper-grid {
+  background-image: linear-gradient(rgba(8, 127, 140, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(8, 127, 140, 0.045) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.noise-layer {
+  position: relative;
+  isolation: isolate;
+}
+
+.noise-layer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.13;
+  z-index: -1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.25'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
