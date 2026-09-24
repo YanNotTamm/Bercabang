@@ -22,6 +22,7 @@ Bercabang adalah Progressive Web App (PWA) mobile-first untuk membantu pengguna 
 - [Deploy PWA](#deploy-pwa)
 - [Upload ke GitHub](#upload-ke-github)
 - [Roadmap](#roadmap)
+- [Lisensi](#lisensi)
 - [Referensi Produk](#referensi-produk)
 
 ## Tentang Produk
@@ -478,6 +479,12 @@ Jangan menyimpan token GitHub di source code atau `.env` yang ikut ter-commit.
 - Ekspor ringkas untuk diskusi keluarga atau konselor.
 - Local backup dan restore yang terenkripsi.
 - PWA install prompt dan update notification yang lebih jelas.
+
+## Lisensi
+
+Project ini dilisensikan dengan [MIT License](./LICENSE).
+
+Kamu bebas menggunakan, menyalin, mengubah, danistribusikan project ini, dengan tetap mempertahankan copyright notice dan permission notice pada salinan atau bagian penting dari software.
 
 ## Referensi Produk
 
