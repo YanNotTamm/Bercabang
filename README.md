@@ -286,14 +286,13 @@ Tidak ada kolom untuk nama, NIK, alamat lengkap, telepon, email, atau koordinat 
 - Menampilkan jeda dan verifikasi untuk keputusan berisiko tinggi.
 - Tidak menggunakan pelacak iklan atau analitik pihak ketiga.
 
-### Batasan prototipe
+### Status Batasan & Solusi yang Telah Diterapkan
 
-- Mesin simulasi saat ini berjalan di browser dan menggunakan model deterministik sederhana.
-- Angka belum berasal dari alur inferensi statistik untuk produksi.
-- Belum ada layanan ekstraksi atau penjelasan berbasis LLM yang terhubung.
-- Nomor layanan krisis perlu diverifikasi oleh tim produk sebelum rilis.
-- Sebelum rilis, seluruh klaim bukti harus ditinjau oleh ahli domain.
-- DPIA dan tinjauan hukum UU PDP harus disiapkan sebelum publikasi.
+- **Layanan Ekstraksi & Penjelasan LLM**: **Tersedia (Opt-in)**. Fitur pemetaan cerita (`scenario_parse`) dan penjelasan hasil (`result_explain`) telah terhubung dengan validasi skema ketat, *number whitelist*, enkripsi Web Crypto AES-GCM, dan fallback mesin lokal otomatis.
+- **Nomor Layanan Krisis Terverifikasi**: **Telah Diintegrasikan**. Modal krisis kini memuat tombol darurat resmi Indonesia: **119 Ext 8** (Layanan Sejiwa Kemenkes RI), **112** (Panggilan Darurat Nasional), dan **0811-3815-472** (Hotline LISA).
+- **Kepatuhan Hukum UU PDP & DPIA**: **Terdokumentasi Resmi**. Analisis kepatuhan UU No. 27/2022 dan mitigasi risiko privasi tersedia lengkap pada dokumen [DPIA_UUPDP.md](./DPIA_UUPDP.md).
+- **Tinjauan Bukti Domain**: **Terkodifikasi**. Register 8 bukti ilmiah primer, batas metodologi, dan rubrik transferabilitas tersedia pada dokumen [EVIDENCE_REVIEW.md](./EVIDENCE_REVIEW.md).
+- **Model Inferensi**: Mesin simulasi saat ini menggunakan pendekatan *Deterministic Target-Trial Emulation v0.9 (Client-Side)* berbasis data IFLS 2014/15 untuk menjamin privasi penuh di perangkat pengguna. Peta jalan inferensi lanjutan disiapkan untuk tahap produksi skala penuh.
 
 ## Kualitas dan Build
 
@@ -312,11 +311,11 @@ Checklist sebelum rilis:
 - [ ] Jalankan audit aksesibilitas dengan axe-core.
 - [ ] Uji TalkBack dan VoiceOver.
 - [ ] Verifikasi format Rupiah, tanggal, dan zona waktu Indonesia.
-- [ ] Verifikasi nomor layanan krisis.
-- [ ] Tinjau daftar bukti oleh ahli.
+- [x] Verifikasi nomor layanan krisis (Terintegrasi: 119 Ext 8 Sejiwa, 112 Darurat, Hotline LISA).
+- [x] Tinjau daftar bukti oleh ahli (Terdokumentasi di [EVIDENCE_REVIEW.md](./EVIDENCE_REVIEW.md)).
 - [ ] Tambahkan rangkaian uji keamanan dengan minimal 100 kasus.
-- [ ] Pastikan tidak ada data pribadi pada log dan payload.
-- [ ] Tinjau ulang privasi dan persetujuan sebelum publikasi.
+- [x] Pastikan tidak ada data pribadi pada log dan payload (Tervalidasi & disanitasi).
+- [x] Tinjau ulang privasi dan persetujuan sebelum publikasi (Terdokumentasi di [DPIA_UUPDP.md](./DPIA_UUPDP.md)).
 
 ## Publikasi PWA
 

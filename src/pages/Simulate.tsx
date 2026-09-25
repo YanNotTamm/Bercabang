@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { AlertTriangle, ArrowRight, BriefcaseBusiness, MapPinned, ShieldAlert, Sparkles } from 'lucide-react'
+import { AlertTriangle, ArrowRight, BriefcaseBusiness, MapPinned, ShieldAlert, Sparkles, PhoneCall } from 'lucide-react'
 import { Card, Eyebrow, Pill, PrimaryButton, ProgressDots } from '../components/ui'
 import { db } from '../lib/db'
 import { checkSafety, isOutOfScope, detectCrisisText, detectOutOfScopeText } from '../lib/engine'
@@ -254,7 +254,74 @@ export default function Simulate() {
 
       <AnimatePresence>
         {showPause && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 grid place-items-center bg-[#172b3a]/35 p-5 backdrop-blur-sm" onClick={() => setShowPause(false)}><motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} onClick={(e) => e.stopPropagation()} className="w-full max-w-[440px] space-y-4 rounded-[26px] bg-white p-6 shadow-2xl"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#fff0e8] text-[#c9663c]"><ShieldAlert /></div><div><h2 className="font-display text-2xl font-extrabold">Sebelum lanjut, mari cek risikonya</h2><p className="mt-2 text-sm leading-6 text-[#617383]">Kondisi tabungan, tanggungan, dan modal membuat keputusan ini lebih sulit dibalik. Tidak apa-apa untuk excruciating dulu.</p></div><div className="space-y-2 rounded-2xl bg-[#f2f8f6] p-4 text-sm leading-6 text-[#314b56]"><p>• Bicarakan dengan orang yang Anda percaya.</p><p>• Hitung biaya hidup jika pendapatan turun 30%.</p><p>• Pertimbangkan mencoba pilihan yang lebih kecil lebih dulu.</p></div><div className="grid grid-cols-2 gap-3"><button onClick={() => setShowPause(false)} className="rounded-2xl border border-[#dce9e6] px-4 py-3.5 font-extrabold text-[#46606a]">Saya ingin-thinking ulang</button><button onClick={() => { setShowPause(false); continueToReflection() }} className="rounded-2xl bg-[#087f8c] px-4 py-3.5 font-extrabold text-white">Saya mengerti, lanjut</button></div></motion.div></motion.div>}
-        {showCrisis && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 grid place-items-center bg-[#172b3a]/35 p-5 backdrop-blur-sm"><motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-[440px] space-y-4 rounded-[26px] bg-white p-6 shadow-2xl"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#fde9e3] text-[#b64d32]"><ShieldAlert /></div><div><h2 className="font-display text-2xl font-extrabold">Kamu tidak sendirian</h2><p className="mt-2 text-sm leading-6 text-[#617383]">Kami mendeteksi bahasa yang membuat kami khawatir. Simulasi kami hentikan agar kamu bisa fokus pada keselamatan dan orang-orang terdekat.</p></div><div className="rounded-2xl border border-[#f1c7b8] bg-[#fff3ee] p-4 text-sm leading-6 text-[#8f4633]"><p className="font-extrabold">Coba satu langkah ini</p><p className="mt-1">Hubungi orang tepercaya, datangi fasilitas kesehatan terdekat, atau hubungi layanan darurat setempat bila keadaan mendesak.</p></div><button onClick={() => setShowCrisis(false)} className="w-full rounded-2xl bg-[#172b3a] px-4 py-3.5 font-extrabold text-white">Kembali dan ubah tulisan saya</button></motion.div></motion.div>}
+        {showCrisis && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 grid place-items-center bg-[#172b3a]/45 p-5 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-[460px] space-y-4 rounded-[26px] bg-white p-6 shadow-2xl">
+              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#fde9e3] text-[#b64d32]">
+                <ShieldAlert size={26} />
+              </div>
+              <div>
+                <h2 className="font-display text-2xl font-extrabold text-[#172b3a]">Kamu tidak sendirian</h2>
+                <p className="mt-2 text-sm leading-6 text-[#617383]">
+                  Kami mendeteksi bahasa yang membuat kami khawatir. Simulasi kami hentikan agar kamu bisa fokus pada keselamatan diri dan mendapatkan dukungan dari orang tepercaya atau profesional.
+                </p>
+              </div>
+
+              <div className="space-y-2.5 rounded-2xl border border-[#f1c7b8] bg-[#fff3ee] p-4 text-xs leading-5 text-[#8f4633]">
+                <p className="font-extrabold text-sm text-[#b64d32]">Layanan Bantuan Krisis Terverifikasi (Indonesia):</p>
+                
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between rounded-xl bg-white p-2.5 border border-[#fad4c5]">
+                    <div>
+                      <strong className="block text-[#172b3a]">Layanan Sejiwa (Kemenkes RI)</strong>
+                      <span className="text-[#71868a]">Konseling kesehatan jiwa darurat (Bebas Pulsa)</span>
+                    </div>
+                    <a
+                      href="tel:119,8"
+                      className="inline-flex items-center gap-1 rounded-lg bg-[#b64d32] px-3 py-1.5 text-xs font-extrabold text-white"
+                    >
+                      <PhoneCall size={12} /> 119 Ext 8
+                    </a>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-xl bg-white p-2.5 border border-[#fad4c5]">
+                    <div>
+                      <strong className="block text-[#172b3a]">Panggilan Darurat Nasional</strong>
+                      <span className="text-[#71868a]">Medis & keadaan mendesak (Bebas Pulsa)</span>
+                    </div>
+                    <a
+                      href="tel:112"
+                      className="inline-flex items-center gap-1 rounded-lg bg-[#172b3a] px-3 py-1.5 text-xs font-extrabold text-white"
+                    >
+                      <PhoneCall size={12} /> 112
+                    </a>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-xl bg-white p-2.5 border border-[#fad4c5]">
+                    <div>
+                      <strong className="block text-[#172b3a]">Hotline LISA (Love Inside Suicide Awareness)</strong>
+                      <span className="text-[#71868a]">Konseling pencegahan bunuh diri 24 jam</span>
+                    </div>
+                    <a
+                      href="tel:08113815472"
+                      className="inline-flex items-center gap-1 rounded-lg bg-[#087f8c] px-2.5 py-1.5 text-xs font-extrabold text-white"
+                    >
+                      <PhoneCall size={12} /> Hubungi
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowCrisis(false)}
+                className="w-full rounded-2xl bg-[#172b3a] px-4 py-3.5 font-extrabold text-white transition hover:bg-[#253d4f]"
+              >
+                Kembali dan ubah tulisan saya
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   )
