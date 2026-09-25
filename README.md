@@ -456,6 +456,32 @@ gh repo view YanNotTamm/Bercabang
 
 Jangan menyimpan token GitHub di kode sumber atau `.env` yang ikut ter-commit.
 
+## Implementasi LLM & Keamanan
+
+Bercabang menyediakan modul LLM opsional dengan batas arsitektural yang ketat:
+
+### 1. Dua Tugas Terbatas (No General Chat)
+LLM di Bercabang **hanya** diizinkan menjalankan 2 tugas:
+- `scenario_parse`: Membantu memetakan cerita bebas pengguna ke parameter skenario (karier atau perpindahan).
+- `result_explain`: Membantu merangkum dan menjelaskan hasil simulasi yang telah dihitung deterministik oleh mesin.
+Tidak ada fitur chat umum, penelusuran web, eksekusi kode, atau pemanggilan tool.
+
+### 2. Pengamanan Kunci & Privasi
+- **Tidak ada API key di kode sumber atau Git**: File `.env` dikecualikan oleh `.gitignore`.
+- **Tidak disimpan polos**: Kunci API tidak pernah disimpan sebagai string polos di `localStorage` atau IndexedDB.
+- **Opsi penyimpanan aman**:
+  - *Memori sesi* (default): Dihapus otomatis saat tab/browser ditutup.
+  - *Enkripsi Web Crypto (AES-GCM 256 + PBKDF2)*: Dienkripsi menggunakan sandi rahasia pribadi pengguna sebelum disimpan lokal.
+  - *Backend Proxy (`server/index.mjs`)*: Mode produksi opsional di mana key disimpan di environment server dan tidak pernah dikirim ke browser.
+- **Sanitasi Error**: Error dari provider dibersihkan dari header `Authorization` dan potongan kunci sebelum ditampilkan di UI.
+
+### 3. Batas & Validasi Output
+- **Number Whitelist**: Untuk `result_explain`, output AI diverifikasi terhadap daftar angka dari hasil simulasi. Jika model mengarang angka di luar data (misal: "Anda pasti untung 90 juta"), jawaban ditolak dan diganti fallback mesin lokal.
+- **Isolasi Prompt**: Input pengguna selalu diperlakukan sebagai `DATA_JSON` terisolasi, bukan instruksi (`prompt injection defense`).
+- **Pemeriksaan Krisis & Cakupan**: Dilakukan sebelum request dikirim ke provider. Input krisis atau di luar cakupan (hubungan pribadi, ramalan, medis, hukum) ditolak di sisi klien.
+- **Rate Limit & Timeout**: Maksimal 4.000 karakter input, 700 token output, suhu 0, timeout 20 detik, maksimal 3 request per sesi, dan batas harian yang dapat diatur pengguna.
+- **Fallback Deterministik**: Jika AI tidak dikonfigurasi, kuota habis, atau terjadi galat jaringan, sistem selalu menggunakan pemetaan dan penjelasan mesin lokal secara transparan.
+
 ## Rencana Pengembangan
 
 ### Siap untuk produksi

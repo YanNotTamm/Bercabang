@@ -4,8 +4,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { AlertTriangle, ArrowRight, BriefcaseBusiness, MapPinned, ShieldAlert, Sparkles } from 'lucide-react'
 import { Card, Eyebrow, Pill, PrimaryButton, ProgressDots } from '../components/ui'
 import { db } from '../lib/db'
-import { checkSafety, isOutOfScope } from '../lib/engine'
+import { checkSafety, isOutOfScope, detectCrisisText, detectOutOfScopeText } from '../lib/engine'
 import type { ScenarioSpec, UserProfile } from '../lib/types'
+import { parseScenarioWithLLM, getLLMConfig, getMemoryApiKey } from '../lib/llm'
+import type { ParsedScenarioDraft } from '../lib/llm-types'
 
 const provinces = ['DKI Jakarta', 'Jawa Barat', 'Jawa Tengah', 'Jawa Timur', 'Bali', 'Sumatera Utara', 'Sulawesi Selatan', 'Kalimantan Timur', 'DI Yogyakarta', 'Banten', 'NTB', 'NTT', 'Lainnya']
 const careerOptions = [
@@ -41,6 +43,9 @@ export default function Simulate() {
   const [reason, setReason] = useState('kerja')
   const [showPause, setShowPause] = useState(false)
   const [showCrisis, setShowCrisis] = useState(false)
+  const [isParsing, setIsParsing] = useState(false)
+  const [parsedDraft, setParsedDraft] = useState<ParsedScenarioDraft | null>(null)
+  const [parseNotice, setParseNotice] = useState<string | null>(null)
 
   useEffect(() => {
     void db.profiles.toArray().then((items) => {
@@ -61,6 +66,65 @@ export default function Simulate() {
   function continueToReflection(draft = buildSpec()) {
     sessionStorage.setItem('bercabang_draft', JSON.stringify(draft))
     nav('/forcing')
+  }
+
+  async function handleParseStory() {
+    if (!freeText.trim()) {
+      setParseNotice('Tuliskan dulu beberapa kalimat ceritamu di kotak teks.')
+      return
+    }
+
+    if (detectCrisisText(freeText)) {
+      setShowCrisis(true)
+      return
+    }
+
+    const scope = detectOutOfScopeText(freeText)
+    if (scope.outOfScope) {
+      setScopeMsg(scope.reason || 'Cerita ini di luar cakupan Bercabang.')
+      return
+    }
+
+    setScopeMsg('')
+    setParseNotice(null)
+    setIsParsing(true)
+
+    try {
+      const config = getLLMConfig()
+      const key = getMemoryApiKey()
+      const parsed = await parseScenarioWithLLM(freeText, config, key)
+      setParsedDraft(parsed)
+    } catch (err: any) {
+      setParseNotice(`Gagal memetakan: ${err.message || 'Terjadi kesalahan'}`)
+    } finally {
+      setIsParsing(false)
+    }
+  }
+
+  function applyParsedDraft() {
+    if (!parsedDraft) return
+
+    setUseCase(parsedDraft.useCase)
+    if (parsedDraft.horizonYears) setHorizon(parsedDraft.horizonYears)
+
+    const p = parsedDraft.params
+    if (parsedDraft.useCase === 'CAREER') {
+      if (p.sectorTarget) setSector(String(p.sectorTarget))
+      if (p.capitalAmountBracket) setCapitalBracket(Number(p.capitalAmountBracket))
+      if (p.capitalSource) setCapitalSource(String(p.capitalSource))
+      if (p.hasSideIncomeTest !== undefined) setSideTest(Boolean(p.hasSideIncomeTest))
+      if (p.experienceYearsInSector !== undefined) setExperience(Number(p.experienceYearsInSector))
+    } else {
+      if (p.destProvinceCode) setDestination(String(p.destProvinceCode))
+      if (p.originProvinceCode) setOrigin(String(p.originProvinceCode))
+      if (p.movingWithFamily !== undefined) setWithFamily(Boolean(p.movingWithFamily))
+      if (p.hasJobOffer !== undefined) setHasOffer(Boolean(p.hasJobOffer))
+      if (p.reason) setReason(String(p.reason))
+    }
+
+    setParsedDraft(null)
+    setParseNotice('Parameter berhasil diterapkan ke formulir. Silakan periksa kembali.')
+    setTimeout(() => setParseNotice(null), 4000)
   }
 
   function handleContinue() {
@@ -113,7 +177,76 @@ export default function Simulate() {
           </motion.div>
         </AnimatePresence>
 
-        <div className="rounded-2xl bg-[#f2f8f6] p-4"><button onClick={() => setShowMore((value) => !value)} className="flex w-full items-center justify-between text-left text-sm font-extrabold text-[#087f8c]"><span className="inline-flex items-center gap-2"><Sparkles size={16} />{showMore ? 'Sembunyikan cerita tambahan' : 'Punya cerita sendiri? Tambahkan di sini'}</span><span className="text-xs">{showMore ? 'Tutup' : 'Opsional'}</span></button>{showMore && <div className="mt-4 space-y-2"><textarea value={freeText} onChange={(e) => setFreeText(e.target.value)} rows={4} placeholder="Ceritakan keputusan yang sedang kamu pikirkan dengan bahasamu sendiri…" className="w-full resize-none rounded-2xl border border-[#dce9e6] bg-white px-4 py-3 text-sm leading-6 placeholder:text-[#a7b8b8]" /><p className="text-xs leading-5 text-[#71868a]">Cerita ini membantu kami memahami konteks. Kamu tetap perlu mengecek ringkasannya sebelum melihat hasil.</p></div>}</div>
+        <div className="rounded-2xl bg-[#f2f8f6] p-4">
+          <button onClick={() => setShowMore((value) => !value)} className="flex w-full items-center justify-between text-left text-sm font-extrabold text-[#087f8c]">
+            <span className="inline-flex items-center gap-2"><Sparkles size={16} />{showMore ? 'Sembunyikan cerita tambahan' : 'Punya cerita sendiri? Tambahkan di sini'}</span>
+            <span className="text-xs">{showMore ? 'Tutup' : 'Opsional'}</span>
+          </button>
+          {showMore && (
+            <div className="mt-4 space-y-3">
+              <textarea
+                value={freeText}
+                onChange={(e) => setFreeText(e.target.value)}
+                rows={4}
+                maxLength={4000}
+                placeholder="Ceritakan keputusan yang sedang kamu pikirkan dengan bahasamu sendiri…"
+                className="w-full resize-none rounded-2xl border border-[#dce9e6] bg-white px-4 py-3 text-sm leading-6 placeholder:text-[#a7b8b8]"
+              />
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs leading-5 text-[#71868a]">
+                  Cerita ini membantu kami memahami konteks. Maksimal 4.000 karakter.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleParseStory}
+                  disabled={isParsing || !freeText.trim()}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#087f8c] px-3.5 py-2 text-xs font-extrabold text-white transition hover:bg-[#066e79] disabled:opacity-50"
+                >
+                  <Sparkles size={14} />
+                  {isParsing ? 'Memetakan...' : 'Bantu petakan dari cerita'}
+                </button>
+              </div>
+
+              {parseNotice && (
+                <div className="rounded-xl bg-[#e0f2f1] p-3 text-xs font-bold text-[#087f8c]">
+                  {parseNotice}
+                </div>
+              )}
+
+              {parsedDraft && (
+                <div className="mt-2 space-y-2.5 rounded-2xl border border-[#9fcac4] bg-white p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-extrabold text-[#087f8c] uppercase tracking-wider">
+                      ✨ Usulan Pemetaan dari Cerita
+                    </span>
+                    <span className="rounded-full bg-[#e0f2f1] px-2 py-0.5 text-[10px] font-extrabold text-[#087f8c]">
+                      {parsedDraft.useCase === 'CAREER' ? 'Karier / Usaha' : 'Pindah Kota'}
+                    </span>
+                  </div>
+                  <p className="text-xs leading-5 text-[#314b56]">
+                    {parsedDraft.detectedSummary}
+                  </p>
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={applyParsedDraft}
+                      className="rounded-xl bg-[#087f8c] px-3.5 py-2 text-xs font-extrabold text-white hover:bg-[#066e79]"
+                    >
+                      Terapkan ke formulir
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setParsedDraft(null)}
+                      className="rounded-xl border border-[#dce9e6] px-3 py-2 text-xs font-bold text-[#71868a]"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         {scopeMsg && <div className="flex gap-2 rounded-2xl border border-[#f1c7b8] bg-[#fff3ee] p-3.5 text-sm leading-6 text-[#a64f36]"><AlertTriangle size={18} className="mt-0.5 shrink-0" />{scopeMsg}</div>}
         <PrimaryButton onClick={handleContinue}>Lanjut: tulis harapanmu <ArrowRight size={17} className="ml-1 inline" /></PrimaryButton>
         <p className="text-center text-xs leading-5 text-[#8aa0a0]">Kamu bisa berhenti kapan saja. Tidak ada yang disimpan ke server tanpa persetujuan.</p>

@@ -6,6 +6,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Card, Eyebrow, GradeBadge } from '../components/ui'
 import { db } from '../lib/db'
 import type { SimulationResult } from '../lib/types'
+import { explainResultWithLLM, getLLMConfig, getMemoryApiKey } from '../lib/llm'
+import type { ExplainedResult } from '../lib/llm-types'
 
 function rupiah(value: number) {
   const sign = value < 0 ? '-' : ''
@@ -38,6 +40,26 @@ export default function Result() {
   const [showDetails, setShowDetails] = useState(false)
   const [stress, setStress] = useState(false)
   const [adjustment, setAdjustment] = useState(0)
+  const [explanation, setExplanation] = useState<ExplainedResult | null>(null)
+  const [isExplaining, setIsExplaining] = useState(false)
+  const [explainError, setExplainError] = useState<string | null>(null)
+
+  async function handleRequestExplanation() {
+    if (!result) return
+    setIsExplaining(true)
+    setExplainError(null)
+
+    try {
+      const config = getLLMConfig()
+      const key = getMemoryApiKey()
+      const res = await explainResultWithLLM(result, config, key)
+      setExplanation(res)
+    } catch (err: any) {
+      setExplainError(err.message || 'Gagal menyiapkan penjelasan AI.')
+    } finally {
+      setIsExplaining(false)
+    }
+  }
 
   useEffect(() => {
     if (!id) return
@@ -85,6 +107,96 @@ export default function Result() {
           <div className="flex gap-4 p-5"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#fff0e8] text-sm font-extrabold text-[#c9663c]">3</span><div><p className="font-extrabold text-[#314b56]">Cara paling aman untuk belajar</p><p className="mt-1 text-sm leading-6 text-[#71868a]">{smallTest ?? 'Coba versi kecil dari pilihan ini sebelum mengambil langkah besar.'}</p></div></div>
         </Card>
       </section>
+
+      {/* Guided AI Explanation (Opt-in) */}
+      <Card className="border border-[#cde6dd] bg-[#f8fbfa] p-5 space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#087f8c] px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white">
+                <Sparkles size={11} /> Opt-In
+              </span>
+              <Eyebrow>Penjelasan Terpandu AI</Eyebrow>
+            </div>
+            <h3 className="text-lg font-extrabold text-[#172b3a]">
+              Ingin ringkasan yang fokus pada langkah belajar?
+            </h3>
+            <p className="text-xs leading-5 text-[#617383]">
+              AI hanya merangkum angka yang sudah dihitung mesin tanpa mengubah hasil atau memberi ramalan pasti. Semua angka diverifikasi dengan <i>number whitelist</i>.
+            </p>
+          </div>
+        </div>
+
+        {!explanation ? (
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={handleRequestExplanation}
+              disabled={isExplaining}
+              className="inline-flex items-center gap-2 rounded-2xl bg-[#087f8c] px-5 py-3 text-xs font-extrabold text-white shadow-[0_8px_20px_rgba(8,127,140,0.2)] transition hover:bg-[#066e79] disabled:opacity-60"
+            >
+              <Sparkles size={15} />
+              {isExplaining ? 'Menganalisis hasil dan memvalidasi angka...' : 'Minta Penjelasan Terpandu'}
+            </button>
+            {explainError && (
+              <p className="mt-2 text-xs font-bold text-[#b64d32]">{explainError}</p>
+            )}
+          </div>
+        ) : (
+          <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 pt-1">
+            <div className="rounded-2xl bg-white p-4 border border-[#dce9e6] space-y-2.5">
+              <div className="flex items-center justify-between border-b border-[#eef5f3] pb-2">
+                <span className="text-xs font-extrabold text-[#087f8c] uppercase tracking-wider">
+                  Ringkasan Situasi
+                </span>
+                <span className="text-[10px] font-bold text-[#6b8589] rounded-full bg-[#f2f8f6] px-2.5 py-0.5">
+                  {explanation.source === 'llm' ? 'Model AI + Whitelist Validated' : 'Mesin Lokal'}
+                </span>
+              </div>
+              <p className="text-sm font-semibold leading-6 text-[#172b3a]">
+                {explanation.summary}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs font-extrabold text-[#314b56]">Poin Utama Berakar Data</p>
+              <div className="space-y-1.5">
+                {explanation.keyTakeaways.map((item, idx) => (
+                  <div key={idx} className="flex gap-2.5 rounded-xl bg-white p-3 text-xs leading-5 text-[#46606a] border border-[#e5efed]">
+                    <span className="font-extrabold text-[#087f8c]">•</span>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs font-extrabold text-[#314b56]">Pertanyaan untuk Didiskusikan</p>
+              <div className="space-y-1.5">
+                {explanation.questionsToAsk.map((q, idx) => (
+                  <div key={idx} className="flex gap-2.5 rounded-xl bg-[#fffaf5] p-3 text-xs leading-5 text-[#795714] border border-[#faedd8]">
+                    <span className="font-extrabold text-[#c9663c]">?</span>
+                    <span>{q}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-[11px] text-[#8aa0a0]">
+                Terverifikasi: Tidak ada angka tambahan yang dihasilkan di luar simulasi.
+              </span>
+              <button
+                type="button"
+                onClick={() => setExplanation(null)}
+                className="text-xs font-bold text-[#71868a] hover:text-[#087f8c]"
+              >
+                Tutup ringkasan
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </Card>
 
       <section className="rounded-[22px] border border-[#f1c7b8] bg-[#fff3ee] p-5"><div className="flex gap-3"><TriangleAlert className="mt-0.5 shrink-0 text-[#c9663c]" size={20} /><div><p className="font-extrabold text-[#8f4633]">Yang tidak bisa diprediksi dari sini</p><p className="mt-1 text-sm leading-6 text-[#9c5a46]">Kejadian tak terduga, perubahan ekonomi, kesehatan, dan peluang yang muncul setelah keputusan. Tidak ada model yang bisa memastikannya.</p></div></div></section>
 

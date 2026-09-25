@@ -33,10 +33,52 @@ function gradeFromESS(ess: number, horizon: number, provinceKnown: boolean): { g
   return { grade: 'D', reasons }
 }
 
+export function detectCrisisText(text?: string): boolean {
+  if (!text) return false
+  const lower = text.toLowerCase()
+  const crisisWords = [
+    'bunuh diri', 'ingin mati', 'menyakiti diri', 'self harm',
+    'akhiri hidup', 'putus asa sekali', 'suicide', 'mengakhiri hidup',
+    'gantung diri', 'menenggak racun', 'sayat tangan', 'tidak ingin hidup lagi'
+  ]
+  return crisisWords.some((word) => lower.includes(word))
+}
+
+export function detectOutOfScopeText(text?: string): { outOfScope: boolean; reason?: string } {
+  if (!text) return { outOfScope: false }
+  const lower = text.toLowerCase()
+
+  const romancePrediction = [
+    'selingkuh', 'pacar saya akan', 'jodoh', 'kecurangan pasangan',
+    'apakah dia mencintai', 'balikan sama mantan', 'ramal nasib', 'ramalan',
+    'apakah suami saya', 'apakah istri saya', 'orang ketiga'
+  ]
+  if (romancePrediction.some((word) => lower.includes(word))) {
+    return {
+      outOfScope: true,
+      reason: 'Bercabang belum bisa membantu memprediksi hubungan pribadi, perasaan orang lain, atau ramalan nasib. Fokuskan pada pilihan karier/usaha atau perpindahan tempat Anda sendiri.'
+    }
+  }
+
+  const medicalLegalCrypto = [
+    'diagnosis penyakit', 'gejala kanker', 'obat apa yang harus', 'resep obat',
+    'pasal pidana', 'gugatan cerai pengadilan', 'pengacara warisan',
+    'judi online', 'slot gacor', 'crypto to the moon', 'koin micin'
+  ]
+  if (medicalLegalCrypto.some((word) => lower.includes(word))) {
+    return {
+      outOfScope: true,
+      reason: 'Bercabang tidak menyediakan diagnosis medis, nasihat hukum, atau spekulasi finansial/judi. Fokus pada simulasi transisi karier atau tempat tinggal.'
+    }
+  }
+
+  return { outOfScope: false }
+}
+
 export function checkSafety(profile: UserProfile | null, spec: Partial<ScenarioSpec>, freeText?: string): { flags: ('HIGH_RISK' | 'CRISIS')[], message?: string } {
-  const text = (freeText ?? '').toLowerCase()
-  const crisisWords = ['bunuh diri', 'ingin mati', 'menyakiti diri', 'self harm', 'akhiri hidup', 'putus asa sekali']
-  if (crisisWords.some((word) => text.includes(word))) return { flags: ['CRISIS'], message: 'Bahasa yang Anda tulis membuat kami khawatir. Simulasi dihentikan agar Anda dapat berbicara dengan orang tepercaya atau tenaga profesional.' }
+  if (detectCrisisText(freeText)) {
+    return { flags: ['CRISIS'], message: 'Bahasa yang Anda tulis membuat kami khawatir. Simulasi dihentikan agar Anda dapat berbicara dengan orang tepercaya atau tenaga profesional.' }
+  }
   const savings = profile?.emergencySavingsMonths ?? 6
   const dependents = profile?.dependents ?? 0
   const capital = Number(spec.params?.capitalAmountBracket ?? 0)
@@ -45,9 +87,7 @@ export function checkSafety(profile: UserProfile | null, spec: Partial<ScenarioS
 }
 
 export function isOutOfScope(freeText?: string): boolean {
-  if (!freeText) return false
-  const text = freeText.toLowerCase()
-  return ['selingkuh', 'pacar saya akan', 'jodoh', 'kecurangan pasangan'].some((word) => text.includes(word))
+  return detectOutOfScopeText(freeText).outOfScope
 }
 
 export function runSimulation(profile: UserProfile, spec: ScenarioSpec): SimulationResult {

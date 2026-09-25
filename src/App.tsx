@@ -10,6 +10,7 @@ import History from './pages/History'
 import Methodology from './pages/Methodology'
 import Onboarding from './pages/Onboarding'
 import ConsentGate from './pages/ConsentGate'
+import Settings from './pages/Settings'
 
 function Gate({ children }: { children: React.ReactNode }) {
   const onboarded = localStorage.getItem('bercabang_onboarded') === '1'
@@ -40,6 +41,8 @@ export default function App() {
               <Route path="/riwayat" element={<Gate><History /></Gate>} />
               <Route path="/metodologi" element={<Methodology />} />
               <Route path="/profil" element={<Gate><ProfilePage /></Gate>} />
+              <Route path="/pengaturan" element={<Gate><Settings /></Gate>} />
+              <Route path="/settings" element={<Navigate to="/pengaturan" replace />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Shell>

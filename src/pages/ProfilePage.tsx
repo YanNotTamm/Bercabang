@@ -48,6 +48,14 @@ export default function ProfilePage() {
         <div className="grid gap-3 sm:grid-cols-2"><Field label="Kisaran penghasilan" hint="Relatif, bukan angka pasti"><select value={form.incomeBracket ?? ''} onChange={(event) => setForm({ ...form, incomeBracket: Number(event.target.value) as UserProfile['incomeBracket'] })} className="w-full rounded-2xl border border-[#dce9e6] bg-white px-3 py-3.5 text-sm"><option value="">Boleh dilewati</option>{[1, 2, 3, 4, 5, 6].map((value) => <option key={value} value={value}>{value} dari 6</option>)}</select></Field><Field label="Tabungan untuk darurat" hint="Berapa bulan bisa bertahan?"><input type="number" min={0} value={form.emergencySavingsMonths ?? ''} onChange={(event) => setForm({ ...form, emergencySavingsMonths: Number(event.target.value) })} placeholder="mis. 4 bulan" className="w-full rounded-2xl border border-[#dce9e6] px-4 py-3.5 text-sm" /></Field></div>
         <PrimaryButton onClick={save}>{saved ? <><Check size={16} className="mr-1 inline" />Tersimpan di perangkat</> : 'Simpan perubahan'}</PrimaryButton>
         <div className="h-px bg-[#e5efed]" />
+        <div>
+          <p className="text-sm font-extrabold text-[#314b56]">Pengaturan AI & LLM (Opsional)</p>
+          <p className="mt-1 text-xs leading-5 text-[#71868a]">Kelola kunci provider, batas harian, dan privasi AI.</p>
+          <a href="/pengaturan" className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-[#dce9e6] bg-[#f8fbfa] px-4 py-3 text-sm font-extrabold text-[#087f8c] transition hover:bg-[#e0f2f1]">
+            Buka Pengaturan AI
+          </a>
+        </div>
+        <div className="h-px bg-[#e5efed]" />
         <div><p className="text-sm font-extrabold text-[#314b56]">Data & privasi</p><p className="mt-1 text-xs leading-5 text-[#71868a]">Riwayat hanya tersimpan di perangkat ini. Tidak ada akun yang dibuat untuk MVP.</p><button onClick={async () => { if (window.confirm('Hapus semua data di perangkat ini?')) { await clearAllData(); window.location.reload() } }} className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-[#f1c7b8] bg-[#fff3ee] px-4 py-3 text-sm font-extrabold text-[#b64d32]"><Trash2 size={16} />Hapus semua data</button></div>
       </Card>
     </div>
