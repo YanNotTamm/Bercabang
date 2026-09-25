@@ -56,6 +56,19 @@ export default function ProfilePage() {
           </a>
         </div>
         <div className="h-px bg-[#e5efed]" />
+        <div>
+          <p className="text-sm font-extrabold text-[#314b56]">Pusat Hak Privasi & UU PDP</p>
+          <p className="mt-1 text-xs leading-5 text-[#71868a]">Unduh salinan data pribadi format JSON atau pelajari jaminan pelindungan data.</p>
+          <div className="mt-3 flex flex-wrap gap-2.5">
+            <a href="/privasi" className="inline-flex items-center gap-2 rounded-2xl border border-[#dce9e6] bg-white px-4 py-3 text-xs font-extrabold text-[#087f8c] transition hover:bg-[#e0f2f1]">
+              Pusat Hak Privasi UU PDP
+            </a>
+            <a href="/krisis" className="inline-flex items-center gap-2 rounded-2xl border border-[#fad4c5] bg-[#fff5f2] px-4 py-3 text-xs font-extrabold text-[#b64d32] transition hover:bg-[#ffece6]">
+              Layanan Darurat & Krisis
+            </a>
+          </div>
+        </div>
+        <div className="h-px bg-[#e5efed]" />
         <div><p className="text-sm font-extrabold text-[#314b56]">Data & privasi</p><p className="mt-1 text-xs leading-5 text-[#71868a]">Riwayat hanya tersimpan di perangkat ini. Tidak ada akun yang dibuat untuk MVP.</p><button onClick={async () => { if (window.confirm('Hapus semua data di perangkat ini?')) { await clearAllData(); window.location.reload() } }} className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-[#f1c7b8] bg-[#fff3ee] px-4 py-3 text-sm font-extrabold text-[#b64d32]"><Trash2 size={16} />Hapus semua data</button></div>
       </Card>
     </div>

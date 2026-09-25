@@ -208,3 +208,52 @@ describe('5. Deterministic Local Fallbacks', () => {
     expect(expl.questionsToAsk.length).toBeGreaterThan(0)
   })
 })
+
+describe('6. Empirical Statistical Engine & Evidence Register', () => {
+  it('produces valid stratified quantile distributions (P10 <= P50 <= P90)', async () => {
+    const { runSimulation } = await import('../lib/engine')
+    const profile = {
+      id: 'usr_test',
+      birthYear: 1994,
+      education: 'sarjana' as const,
+      incomeBracket: 4 as const,
+      provinceCode: 'DKI Jakarta',
+      emergencySavingsMonths: 5,
+      dependents: 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+    const spec = {
+      id: 'scn_emp',
+      useCase: 'CAREER' as const,
+      horizonYears: 5 as const,
+      strategies: [
+        { key: 'resign_usaha', label: 'Mulai Usaha' },
+        { key: 'tetap_kerja', label: 'Tetap Bekerja' },
+      ],
+      params: { sectorTarget: 'kuliner' },
+      userReflection: { expectedOutcomeSelf: 4, confidencePct: 50, topValues: [] },
+      createdAt: new Date().toISOString(),
+    }
+
+    const res = runSimulation(profile, spec)
+    expect(res.strategies).toHaveLength(2)
+    res.strategies.forEach((strat) => {
+      strat.outcomes.financial[0].points.forEach((pt) => {
+        expect(pt.interval.p10).toBeLessThanOrEqual(pt.interval.p50)
+        expect(pt.interval.p50).toBeLessThanOrEqual(pt.interval.p90)
+      })
+    })
+  })
+
+  it('validates completeness of domain evidence register', async () => {
+    const { EVIDENCE } = await import('../lib/evidence')
+    expect(EVIDENCE.length).toBeGreaterThanOrEqual(8)
+    EVIDENCE.forEach((item) => {
+      expect(item.id).toBeTruthy()
+      expect(item.citation).toBeTruthy()
+      expect(item.claim).toBeTruthy()
+      expect(['low', 'medium', 'high']).toContain(item.transferabilityToID)
+    })
+  })
+})

@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Home, Compass, History, BookOpen, UserRound, SlidersHorizontal } from 'lucide-react'
+import { Home, Compass, History, BookOpen, UserRound, SlidersHorizontal, HeartPulse } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 const tabs = [
@@ -26,7 +26,8 @@ export default function Shell({ children }: { children: ReactNode }) {
                 <span className="mt-0.5 block text-[10px] font-bold uppercase tracking-[0.12em] text-[#6b8589]">Ruang untuk berpikir</span>
               </span>
             </NavLink>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <NavLink to="/krisis" className="grid h-10 w-10 place-items-center rounded-2xl border border-[#fad4c5] bg-[#fff5f2] text-[#b64d32] shadow-sm transition hover:bg-[#ffece6]" aria-label="Buka layanan darurat dan krisis"><HeartPulse size={18} /></NavLink>
               <NavLink to="/pengaturan" className="grid h-10 w-10 place-items-center rounded-2xl border border-[#dce9e6] bg-white text-[#46606a] shadow-sm transition hover:border-[#9fcac4] hover:text-[#087f8c]" aria-label="Buka pengaturan AI"><SlidersHorizontal size={18} /></NavLink>
               <NavLink to="/profil" className="grid h-10 w-10 place-items-center rounded-2xl border border-[#dce9e6] bg-white text-[#46606a] shadow-sm transition hover:border-[#9fcac4] hover:text-[#087f8c]" aria-label="Buka profil dan data"><UserRound size={18} /></NavLink>
             </div>

@@ -11,6 +11,8 @@ import Methodology from './pages/Methodology'
 import Onboarding from './pages/Onboarding'
 import ConsentGate from './pages/ConsentGate'
 import Settings from './pages/Settings'
+import PrivacyPage from './pages/PrivacyPage'
+import CrisisPage from './pages/CrisisPage'
 
 function Gate({ children }: { children: React.ReactNode }) {
   const onboarded = localStorage.getItem('bercabang_onboarded') === '1'
@@ -42,6 +44,10 @@ export default function App() {
               <Route path="/metodologi" element={<Methodology />} />
               <Route path="/profil" element={<Gate><ProfilePage /></Gate>} />
               <Route path="/pengaturan" element={<Gate><Settings /></Gate>} />
+              <Route path="/privasi" element={<PrivacyPage />} />
+              <Route path="/privacy" element={<Navigate to="/privasi" replace />} />
+              <Route path="/krisis" element={<CrisisPage />} />
+              <Route path="/bantuan" element={<Navigate to="/krisis" replace />} />
               <Route path="/settings" element={<Navigate to="/pengaturan" replace />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

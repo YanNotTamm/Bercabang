@@ -3,7 +3,7 @@ import { ArrowRight, Check, HeartHandshake, MessageCircleQuestion, Scale, Sparkl
 import { useNavigate } from 'react-router-dom'
 import { Card, Eyebrow, PrimaryButton, ProgressDots } from '../components/ui'
 import { db } from '../lib/db'
-import { runSimulation } from '../lib/engine'
+import { runProductionSimulation } from '../lib/engine'
 import type { ScenarioSpec } from '../lib/types'
 
 const values = [
@@ -43,7 +43,7 @@ export default function Forcing() {
     await db.scenarios.put(spec)
     const savedProfile = (await db.profiles.toArray())[0]
     const profile = savedProfile ?? { id: 'local', birthYear: Number(localStorage.getItem('bercabang_birthYear') || 1996), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as any
-    const result = runSimulation(profile, spec)
+    const result = await runProductionSimulation(profile, spec)
     await db.results.put(result)
     sessionStorage.removeItem('bercabang_draft')
     nav(`/hasil/${result.id}`)
